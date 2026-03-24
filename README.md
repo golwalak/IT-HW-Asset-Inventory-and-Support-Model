@@ -1,144 +1,165 @@
-# IT Hardware Asset Inventory & Support Model POC
+# IT Hardware Asset Inventory & Support Model
 
-> **VibeAThon POC** – A proof-of-concept web application to analyse IT hardware assets and determine optimal support/maintenance strategies to reduce costs.
+A full-stack POC web application for IT Hardware Asset Inventory and Support Model analysis.
+Upload your hardware inventory CSV, visualize assets across data centers, analyze support tier costs, track warranty expiry, and identify cost avoidance opportunities.
 
 ---
 
-## Purpose
+## Project Overview
 
-This application processes an IT hardware asset inventory CSV file and helps stakeholders visualise the asset landscape, identify cost-saving opportunities by recommending appropriate support tiers (Tier 1–4), and calculate potential annual cost avoidance.
+This application enables IT operations teams to:
+
+- **Upload** an IT hardware inventory CSV (based on the ADC/IOC inventory format)
+- **Browse** and filter all assets in a paginated, sortable table
+- **Analyze** support tier assignments and calculate cost avoidance potential
+- **Report** assets grouped by application, owner, location, manufacturer, or support group
+- **Track** warranty expiry windows (30 / 60 / 90 / 180 days)
+- **Export** filtered views and reports to CSV
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Backend | Python 3.11+ / Flask 3 |
-| Data processing | pandas |
-| Frontend | HTML5, Bootstrap 5, Chart.js |
-| Charts | Chart.js 4 |
+| Layer     | Technology                    |
+|-----------|-------------------------------|
+| Backend   | Python 3.11+ / Flask          |
+| Data      | pandas (in-memory CSV store)  |
+| Frontend  | React 18 + Vite               |
+| Styling   | Bootstrap 5 + Bootstrap Icons |
+| HTTP      | Axios                         |
 
 ---
 
-## Quick Start
+## Folder Structure
 
-```bash
-# 1. Clone the repository
-git clone https://github.com/golwalak/IT-HW-Asset-Inventory-and-Support-Model.git
-cd IT-HW-Asset-Inventory-and-Support-Model
-
-# 2. Create and activate a virtual environment (optional but recommended)
-python -m venv venv
-source venv/bin/activate   # macOS/Linux
-venv\Scripts\activate      # Windows
-
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Run the application
-python app.py
-# or
-flask run
+```
+/
+├── backend/
+│   ├── app.py                  # Flask app entry point
+│   ├── requirements.txt        # Python dependencies
+│   ├── routes/
+│   │   ├── assets.py           # Asset query / export endpoints
+│   │   ├── upload.py           # CSV upload endpoint
+│   │   └── reports.py          # Grouping / reporting endpoints
+│   └── utils/
+│       ├── csv_parser.py       # CSV parsing logic (pandas)
+│       └── tier_calculator.py  # Support tier cost logic
+├── frontend/
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── index.html
+│   └── src/
+│       ├── main.jsx
+│       ├── App.jsx             # Main app shell + navigation
+│       ├── index.css
+│       ├── components/
+│       │   ├── AssetTable.jsx        # Paginated, filterable asset table
+│       │   ├── UploadPanel.jsx       # CSV drag-and-drop upload
+│       │   ├── SupportTierPanel.jsx  # Tier analysis + summary cards
+│       │   ├── ReportView.jsx        # Grouped reporting views
+│       │   ├── WarrantyTracker.jsx   # Warranty expiry tracker
+│       │   ├── AssetDetailModal.jsx  # Asset detail popup
+│       │   └── shared.jsx            # Shared badge + format helpers
+│       └── services/
+│           └── api.js          # Axios API calls to backend
+├── data/
+│   └── sample_inventory.csv    # 15-row sample inventory
+├── README.md
+└── requirements.md
 ```
 
-Then open http://127.0.0.1:5000 in your browser.
+---
+
+## Setup Instructions
+
+### Prerequisites
+
+- **Python 3.11+** and **pip**
+- **Node.js 18+** and **npm**
 
 ---
 
-## Features
+### Backend Setup
 
-### Dashboard
-- KPI summary cards (total assets, potential cost avoidance, savings %, tier-eligible count)
-- Charts: assets by type, location, warranty status, age distribution, tier distribution
-- Support group and tier summary tables
+```bash
+cd backend
+pip install -r requirements.txt
+python app.py
+```
 
-### Inventory Table
-- Full paginated asset list with sortable columns
-- Filter by: Owner, Application, Location, Type, Status, Support Group
-- Quick in-page search
-- CSV export of filtered results
+The Flask API will start on **http://localhost:5000**.
 
-### Support Model Analysis
-- Per-asset tier recommendation with reasoning
-- Tier breakdown table with OEM cost and cost avoidance totals
-- Cost avoidance bar chart by tier
-- Support tier model reference card
+---
 
-### CSV Upload
-- Upload a custom inventory CSV to replace the sample dataset
-- Column mapping reference provided in the UI
+### Frontend Setup
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The React dev server will start on **http://localhost:3000** and proxy `/api` requests to the Flask backend.
+
+---
+
+## How to Run Locally
+
+1. **Start the backend** (Terminal 1):
+   ```bash
+   cd backend
+   python app.py
+   ```
+
+2. **Start the frontend** (Terminal 2):
+   ```bash
+   cd frontend
+   npm install  # first time only
+   npm run dev
+   ```
+
+3. **Open the app** at http://localhost:3000
+
+---
+
+## How to Use the App
+
+1. **Upload CSV**: Click "Upload CSV" in the sidebar, then drag & drop (or click to browse) your inventory CSV file.
+2. **Asset Inventory**: Browse all assets with filters; click any row for full detail.
+3. **Support Tier Analysis**: View tier distribution, OEM costs, and potential cost avoidance.
+4. **Reports**: Group assets by Application, Owner, Location, Manufacturer, or Support Group; export to CSV.
+5. **Warranty Tracker**: Filter assets by warranty expiry window with color-coded urgency.
 
 ---
 
 ## Support Tier Model
 
-| Tier | Description | Savings |
-|------|-------------|---------|
-| **Tier 1** | 7x24 OEM Support (baseline) | 0% |
-| **Tier 2** | Next Business Day (NBD) | 7% |
-| **Tier 3** | No Support Contract | 100% |
-| **Tier 4** | 7x24 Third-Party Support | 80% |
+| Tier   | Name               | Description                         | Savings vs Tier 1 |
+|--------|--------------------|-------------------------------------|-------------------|
+| Tier 1 | 7x24 OEM           | Full OEM support, 24/7/365          | Baseline (0%)     |
+| Tier 2 | NBD (Next Bus Day) | OEM Next Business Day support       | ~7%               |
+| Tier 3 | No Contract        | Self-supported, no vendor contract  | 100%              |
+| Tier 4 | 3rd Party 7x24     | Third-party provider, full coverage | ~80%              |
 
-### Tier Recommendation Rules
+### Tier Recommendation Heuristic
 
-1. Warranty **Active** → Tier 1 (OEM covered under warranty)
-2. **Non-production** + age **> 60 months** → Tier 3 (no support)
-3. **Non-production** + age **36–60 months** → Tier 4 (3rd party)
-4. **Production** + age **> 84 months** → Tier 4 (3rd party)
-5. **Production** + age **60–84 months** → Tier 2 (NBD)
-6. Default → Tier 1
+| Condition                             | Recommended Tier |
+|---------------------------------------|-----------------|
+| Non-prod AND age > 60 months          | Tier 3          |
+| Non-prod AND age <= 60 months         | Tier 2          |
+| Prod AND age > 84 months              | Tier 4          |
+| Prod AND warranty still active        | Tier 1          |
+| Otherwise                             | Tier 2          |
 
-### Cost Avoidance Formula
+### Cost Avoidance Calculation
 
-```
-Tier 2 savings = OEM_annual_cost × 7%
-Tier 3 savings = OEM_annual_cost × 100%
-Tier 4 savings = OEM_annual_cost × 80%
-```
-
----
-
-## Project Structure
-
-```
-├── app.py                          # Flask application entry point
-├── requirements.txt                # Python dependencies
-├── data/
-│   └── sample_inventory.csv        # 24-row sample dataset
-├── static/
-│   ├── css/style.css               # Custom styles
-│   └── js/main.js                  # Chart.js helpers
-├── templates/
-│   ├── base.html                   # Base layout with Bootstrap navbar
-│   ├── index.html                  # Dashboard page
-│   ├── inventory.html              # Full inventory table
-│   ├── analysis.html               # Support model analysis
-│   └── upload.html                 # CSV upload page
-└── utils/
-    ├── __init__.py
-    ├── data_loader.py              # CSV parsing & data processing
-    └── support_model.py            # Tier logic & cost calculations
-```
+- Tier 2 savings = OEM annual cost x 7%
+- Tier 3 savings = OEM annual cost x 100%
+- Tier 4 savings = OEM annual cost x 80%
+- If OEM cost is blank: displays "N/A"
 
 ---
 
-## Screenshots
+## License
 
-*(Screenshots to be added after stakeholder demo)*
-
----
-
-## Open Questions / Future Work
-
-1. **OEM Cost Fields** – Currently mock/estimated per model. Should be sourced from actual contracts or CMDB.
-2. **Owner & Application Fields** – Mock data for POC. Future integration with ServiceNow / CMDB for real ownership data.
-3. **Age Field** – Currently pre-calculated in the CSV. Future versions should derive from `Operational Date`.
-4. **Authentication** – No auth in this POC. Production version should integrate with SSO/LDAP.
-5. **CMDB Integration** – Replace mock fields with live ServiceNow CMDB API data.
-6. **Scheduled Refresh** – Automate CSV ingestion from a shared drive or API endpoint.
-
----
-
-*VibeAThon POC – For demonstration purposes only. Not intended for production use.*
-
+POC - Internal use only.
