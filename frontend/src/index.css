@@ -1,0 +1,64 @@
+:root {
+  --bs-primary: #0d6efd;
+}
+
+body {
+  background-color: #f8f9fa;
+}
+
+.nav-link.active {
+  font-weight: 600;
+}
+
+.tier-badge-tier-1 { background-color: #0d6efd; color: #fff; }
+.tier-badge-tier-2 { background-color: #198754; color: #fff; }
+.tier-badge-tier-3 { background-color: #6c757d; color: #fff; }
+.tier-badge-tier-4 { background-color: #fd7e14; color: #fff; }
+
+.warranty-expired { background-color: #f8d7da !important; }
+.warranty-expiring { background-color: #fff3cd !important; }
+.warranty-active { background-color: #d1e7dd !important; }
+
+.table-hover tbody tr:hover {
+  cursor: pointer;
+}
+
+.sidebar {
+  min-height: calc(100vh - 56px);
+  background: #212529;
+}
+
+.sidebar .nav-link {
+  color: #adb5bd;
+  padding: 0.5rem 1rem;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+  color: #fff;
+  background-color: rgba(255,255,255,0.1);
+  border-radius: 4px;
+}
+
+.sidebar .nav-link i {
+  width: 20px;
+  margin-right: 8px;
+}
+
+.stat-card {
+  border-left: 4px solid;
+}
+.stat-card-blue { border-left-color: #0d6efd; }
+.stat-card-green { border-left-color: #198754; }
+.stat-card-yellow { border-left-color: #ffc107; }
+.stat-card-red { border-left-color: #dc3545; }
+
+.loading-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
