@@ -1,165 +1,98 @@
-# IT Hardware Asset Inventory & Support Model
+# IT Hardware Asset Inventory and Support Model
 
-A full-stack POC web application for IT Hardware Asset Inventory and Support Model analysis.
-Upload your hardware inventory CSV, visualize assets across data centers, analyze support tier costs, track warranty expiry, and identify cost avoidance opportunities.
-
----
-
-## Project Overview
-
-This application enables IT operations teams to:
-
-- **Upload** an IT hardware inventory CSV (based on the ADC/IOC inventory format)
-- **Browse** and filter all assets in a paginated, sortable table
-- **Analyze** support tier assignments and calculate cost avoidance potential
-- **Report** assets grouped by application, owner, location, manufacturer, or support group
-- **Track** warranty expiry windows (30 / 60 / 90 / 180 days)
-- **Export** filtered views and reports to CSV
-
----
+A **VibeAThon POC** for visualizing and analyzing IT hardware asset data with support/maintenance cost modeling.
 
 ## Tech Stack
 
-| Layer     | Technology                    |
-|-----------|-------------------------------|
-| Backend   | Python 3.11+ / Flask          |
-| Data      | pandas (in-memory CSV store)  |
-| Frontend  | React 18 + Vite               |
-| Styling   | Bootstrap 5 + Bootstrap Icons |
-| HTTP      | Axios                         |
+- **Backend**: Node.js + Express (REST API, CSV ingestion, in-memory store)
+- **Frontend**: React (React Router, Axios)
 
 ---
 
 ## Folder Structure
 
 ```
-/
+IT-HW-Asset-Inventory-and-Support-Model/
 ├── backend/
-│   ├── app.py                  # Flask app entry point
-│   ├── requirements.txt        # Python dependencies
-│   ├── routes/
-│   │   ├── assets.py           # Asset query / export endpoints
-│   │   ├── upload.py           # CSV upload endpoint
-│   │   └── reports.py          # Grouping / reporting endpoints
-│   └── utils/
-│       ├── csv_parser.py       # CSV parsing logic (pandas)
-│       └── tier_calculator.py  # Support tier cost logic
+│   ├── server.js              # Express entry point (port 3001)
+│   ├── routes/                # assets.js, reports.js
+│   ├── controllers/           # assetsController.js, reportsController.js
+│   ├── models/Asset.js        # Asset data model
+│   ├── middleware/            # errorHandler.js
+│   ├── utils/csvParser.js     # CSV parsing utility
+│   └── data/                  # Uploaded CSV files (gitignored)
 ├── frontend/
-│   ├── package.json
-│   ├── vite.config.js
-│   ├── index.html
 │   └── src/
-│       ├── main.jsx
-│       ├── App.jsx             # Main app shell + navigation
-│       ├── index.css
-│       ├── components/
-│       │   ├── AssetTable.jsx        # Paginated, filterable asset table
-│       │   ├── UploadPanel.jsx       # CSV drag-and-drop upload
-│       │   ├── SupportTierPanel.jsx  # Tier analysis + summary cards
-│       │   ├── ReportView.jsx        # Grouped reporting views
-│       │   ├── WarrantyTracker.jsx   # Warranty expiry tracker
-│       │   ├── AssetDetailModal.jsx  # Asset detail popup
-│       │   └── shared.jsx            # Shared badge + format helpers
-│       └── services/
-│           └── api.js          # Axios API calls to backend
-├── data/
-│   └── sample_inventory.csv    # 15-row sample inventory
-├── README.md
-└── requirements.md
+│       ├── App.js             # Router + Nav
+│       ├── pages/             # Dashboard, InventoryPage, ReportsPage
+│       ├── components/        # AssetTable, AssetFilter, SupportTierBadge, etc.
+│       ├── services/api.js    # Axios API helpers
+│       ├── hooks/useAssets.js # Custom React hook
+│       └── utils/formatters.js
+├── docs/
+│   ├── requirements.md
+│   └── data-dictionary.md
+└── package.json               # Root monorepo scripts
 ```
 
 ---
 
-## Setup Instructions
+## Setup & Running
 
-### Prerequisites
-
-- **Python 3.11+** and **pip**
-- **Node.js 18+** and **npm**
-
----
-
-### Backend Setup
+### 1. Install all dependencies
 
 ```bash
-cd backend
-pip install -r requirements.txt
-python app.py
+npm run install:all
 ```
 
-The Flask API will start on **http://localhost:5000**.
-
----
-
-### Frontend Setup
+### 2. Start development servers
 
 ```bash
-cd frontend
-npm install
 npm run dev
 ```
 
-The React dev server will start on **http://localhost:3000** and proxy `/api` requests to the Flask backend.
+This starts:
+- Backend on **http://localhost:3001**
+- Frontend on **http://localhost:3000**
+
+### 3. Upload a CSV
+
+Navigate to the **Dashboard** and use the **Upload Inventory CSV** widget to load your inventory export. The backend will parse the file and hold the data in memory for the session.
 
 ---
 
-## How to Run Locally
+## API Endpoints
 
-1. **Start the backend** (Terminal 1):
-   ```bash
-   cd backend
-   python app.py
-   ```
-
-2. **Start the frontend** (Terminal 2):
-   ```bash
-   cd frontend
-   npm install  # first time only
-   npm run dev
-   ```
-
-3. **Open the app** at http://localhost:3000
-
----
-
-## How to Use the App
-
-1. **Upload CSV**: Click "Upload CSV" in the sidebar, then drag & drop (or click to browse) your inventory CSV file.
-2. **Asset Inventory**: Browse all assets with filters; click any row for full detail.
-3. **Support Tier Analysis**: View tier distribution, OEM costs, and potential cost avoidance.
-4. **Reports**: Group assets by Application, Owner, Location, Manufacturer, or Support Group; export to CSV.
-5. **Warranty Tracker**: Filter assets by warranty expiry window with color-coded urgency.
+| Method | Path                          | Description                        |
+|--------|-------------------------------|------------------------------------|
+| GET    | /api/health                   | Health check                       |
+| GET    | /api/assets                   | All assets (filter: owner, application, status) |
+| GET    | /api/assets/:id               | Single asset by Asset Number       |
+| POST   | /api/assets/upload            | Upload CSV file                    |
+| GET    | /api/reports/by-owner         | Assets grouped by Owner            |
+| GET    | /api/reports/by-application   | Assets grouped by Application      |
+| GET    | /api/reports/by-tier          | Assets grouped by support tier     |
+| GET    | /api/reports/cost-avoidance   | Cost avoidance summary             |
 
 ---
 
 ## Support Tier Model
 
-| Tier   | Name               | Description                         | Savings vs Tier 1 |
-|--------|--------------------|-------------------------------------|-------------------|
-| Tier 1 | 7x24 OEM           | Full OEM support, 24/7/365          | Baseline (0%)     |
-| Tier 2 | NBD (Next Bus Day) | OEM Next Business Day support       | ~7%               |
-| Tier 3 | No Contract        | Self-supported, no vendor contract  | 100%              |
-| Tier 4 | 3rd Party 7x24     | Third-party provider, full coverage | ~80%              |
+| Tier   | Description            | Savings vs OEM Tier 1 |
+|--------|------------------------|-----------------------|
+| Tier 1 | 7x24 OEM               | Baseline (0%)         |
+| Tier 2 | NBD OEM                | 7% savings            |
+| Tier 3 | No support             | 100% savings          |
+| Tier 4 | 7x24 3rd Party         | 80% savings           |
 
-### Tier Recommendation Heuristic
-
-| Condition                             | Recommended Tier |
-|---------------------------------------|-----------------|
-| Non-prod AND age > 60 months          | Tier 3          |
-| Non-prod AND age <= 60 months         | Tier 2          |
-| Prod AND age > 84 months              | Tier 4          |
-| Prod AND warranty still active        | Tier 1          |
-| Otherwise                             | Tier 2          |
-
-### Cost Avoidance Calculation
-
-- Tier 2 savings = OEM annual cost x 7%
-- Tier 3 savings = OEM annual cost x 100%
-- Tier 4 savings = OEM annual cost x 80%
-- If OEM cost is blank: displays "N/A"
+**Cost avoidance** = OEM cost × savings % (only when not on Tier 1).  
+OEM $ / cost fields are **manually populated** in the CSV.  
+`Owner` and `Application` are the **authoritative** fields for grouping and reporting.
 
 ---
 
-## License
+## Documentation
 
-POC - Internal use only.
+- [`docs/requirements.md`](docs/requirements.md) — Project requirements and open questions
+- [`docs/data-dictionary.md`](docs/data-dictionary.md) — CSV field descriptions and data types
+

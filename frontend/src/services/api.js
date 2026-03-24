@@ -1,43 +1,52 @@
-import axios from 'axios'
+// Axios instance and API helper functions
+import axios from 'axios';
 
-const API_BASE = '/api'
+// Use REACT_APP_API_URL env var or fall back to the proxy (relative URL)
+const BASE_URL = process.env.REACT_APP_API_URL || '/api';
 
-const api = axios.create({
-  baseURL: API_BASE,
-})
+const api = axios.create({ baseURL: BASE_URL });
 
-export const uploadCSV = (file) => {
-  const formData = new FormData()
-  formData.append('file', file)
-  return api.post('/upload', formData, {
+/**
+ * Fetch all assets with optional filters.
+ * @param {{owner?:string, application?:string, status?:string}} filters
+ */
+export function getAssets(filters = {}) {
+  return api.get('/assets', { params: filters }).then((r) => r.data);
+}
+
+/**
+ * Fetch a single asset by Asset Number.
+ * @param {string} id
+ */
+export function getAssetById(id) {
+  return api.get(`/assets/${id}`).then((r) => r.data);
+}
+
+/**
+ * Upload a CSV file to the backend.
+ * @param {File} file
+ */
+export function uploadCSV(file) {
+  const form = new FormData();
+  form.append('file', file);
+  return api.post('/assets/upload', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
-  })
+  }).then((r) => r.data);
 }
 
-export const getAssets = (params = {}) => api.get('/assets', { params })
-
-export const getAsset = (index) => api.get(`/assets/${index}`)
-
-export const getAssetSummary = () => api.get('/assets/summary')
-
-export const exportAssets = (params = {}) => {
-  const query = new URLSearchParams(params).toString()
-  window.open(`${API_BASE}/assets/export?${query}`, '_blank')
+/** Grouped report by Owner. */
+export function getReportByOwner() {
+  return api.get('/reports/by-owner').then((r) => r.data);
 }
 
-export const getTierSummary = () => api.get('/reports/tier-summary')
-
-export const getReportByApplication = () => api.get('/reports/by-application')
-export const getReportByOwner = () => api.get('/reports/by-owner')
-export const getReportByLocation = () => api.get('/reports/by-location')
-export const getReportByManufacturer = () => api.get('/reports/by-manufacturer')
-export const getReportBySupportGroup = () => api.get('/reports/by-support-group')
-
-export const getWarrantyReport = (days) =>
-  api.get('/reports/warranty', { params: { days } })
-
-export const exportReport = (groupBy) => {
-  window.open(`${API_BASE}/reports/export/${groupBy}`, '_blank')
+/** Grouped report by Application. */
+export function getReportByApplication() {
+  return api.get('/reports/by-application').then((r) => r.data);
 }
 
-export default api
+/** Cost avoidance summary. */
+export function getCostAvoidanceSummary() {
+  return api.get('/reports/cost-avoidance').then((r) => r.data);
+}
+
+export default api;
