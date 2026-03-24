@@ -8,7 +8,7 @@ const Asset = require('../models/Asset');
  * Parse a CSV file into an array of Asset objects.
  *
  * The IT HW inventory CSV sometimes has a merged "banner" header row at the
- * top (e.g. "mininal accepted support maintenance") before the real column
+ * top (e.g. "minimal accepted support maintenance") before the real column
  * headers. This utility skips any rows where the first cell does not look
  * like a data row (i.e. it matches the known banner text).
  *
@@ -18,7 +18,7 @@ const Asset = require('../models/Asset');
 function parseCSV(filePath) {
   return new Promise((resolve, reject) => {
     const assets = [];
-    const BANNER_PATTERN = /mininal accepted support/i;
+    const BANNER_PATTERN = /min[im]nal accepted support/i;
 
     fs.createReadStream(filePath)
       .pipe(csvParser())
