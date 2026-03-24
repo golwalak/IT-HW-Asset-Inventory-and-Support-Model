@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block title %}Support Analysis{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0"><i class="bi bi-bar-chart-line me-2 text-primary"></i>Support Model Analysis</h2>
+  <a href="{{ url_for('export', **active_filters) }}" class="btn btn-outline-success btn-sm">
+    <i class="bi bi-download me-1"></i>Export CSV
+  </a>
+</div>
+
+<!-- Filter Bar -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-light fw-semibold"><i class="bi bi-funnel me-1"></i>Filters</div>
+  <div class="card-body">
+    <form method="get" action="{{ url_for('analysis') }}" class="row g-2 align-items-end">
+      {% set filter_labels = {'owner': 'Owner', 'application': 'Application', 'location': 'Location',
+                              'type': 'Type', 'status': 'Status', 'support_group': 'Support Group'} %}
+      {% for key, label in filter_labels.items() %}
+      <div class="col-sm-6 col-md-4 col-lg-2">
+        <label class="form-label small mb-1">{{ label }}</label>
+        <select name="{{ key }}" class="form-select form-select-sm">
+          <option value="">All</option>
+          {% for opt in filter_options.get(key, []) %}
+          <option value="{{ opt }}" {% if active_filters.get(key) == opt %}selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endfor %}
+      <div class="col-sm-6 col-md-4 col-lg-2 d-flex gap-2">
+        <button type="submit" class="btn btn-primary btn-sm w-100">Apply</button>
+        <a href="{{ url_for('analysis') }}" class="btn btn-outline-secondary btn-sm w-100">Clear</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Totals KPIs -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="card kpi-card border-primary shadow-sm h-100">
+      <div class="card-body text-center">
+        <div class="kpi-value text-primary">{{ totals.total_assets }}</div>
+        <div class="kpi-label">Filtered Assets</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card kpi-card border-secondary shadow-sm h-100">
+      <div class="card-body text-center">
+        <div class="kpi-value text-secondary">${{ "{:,.0f}".format(totals.total_oem_cost) }}</div>
+        <div class="kpi-label">Total OEM Baseline Cost/yr</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card kpi-card border-success shadow-sm h-100">
+      <div class="card-body text-center">
+        <div class="kpi-value text-success">${{ "{:,.0f}".format(totals.total_cost_avoidance) }}</div>
+        <div class="kpi-label">Potential Cost Avoidance/yr</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card kpi-card border-warning shadow-sm h-100">
+      <div class="card-body text-center">
+        <div class="kpi-value text-warning">{{ totals.avoidance_pct }}%</div>
+        <div class="kpi-label">% Savings vs OEM Baseline</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tier Summary + Chart -->
+<div class="row g-3 mb-4">
+  <div class="col-lg-5">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-light fw-semibold">Tier Breakdown</div>
+      <div class="card-body p-0">
+        <table class="table table-sm table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Tier</th>
+              <th class="text-end">Assets</th>
+              <th class="text-end">OEM Cost</th>
+              <th class="text-end">Cost Avoidance</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in tier_summary %}
+            <tr>
+              <td>
+                <span class="badge {{ tier_badge(t.tier) }} me-1">Tier {{ t.tier }}</span>
+                <small>{{ t.label.split('–')[1].strip() if '–' in t.label else t.label }}</small>
+              </td>
+              <td class="text-end">{{ t.count }}</td>
+              <td class="text-end">${{ "{:,.0f}".format(t.total_oem_cost) }}</td>
+              <td class="text-end text-success fw-semibold">${{ "{:,.0f}".format(t.total_cost_avoidance) }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="table-light fw-bold">
+              <td>Total</td>
+              <td class="text-end">{{ totals.total_assets }}</td>
+              <td class="text-end">${{ "{:,.0f}".format(totals.total_oem_cost) }}</td>
+              <td class="text-end text-success">${{ "{:,.0f}".format(totals.total_cost_avoidance) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-light fw-semibold">Cost Avoidance by Tier ($)</div>
+      <div class="card-body">
+        <canvas id="tierAvoidanceChart" style="max-height:280px;"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tier legend explanation -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-light fw-semibold">Support Tier Model Reference</div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-3">
+        <div class="p-3 rounded border border-primary h-100">
+          <h6 class="text-primary"><span class="badge bg-primary me-1">Tier 1</span>7x24 OEM</h6>
+          <p class="small mb-1">Full OEM support. Baseline cost.</p>
+          <p class="small text-muted mb-0">Typically: warranty-active or mission-critical assets.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 rounded border border-info h-100">
+          <h6 class="text-info"><span class="badge bg-info text-dark me-1">Tier 2</span>NBD – 7% savings</h6>
+          <p class="small mb-1">Next Business Day response. 7% cost reduction.</p>
+          <p class="small text-muted mb-0">Production assets aged 60–84 months.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 rounded border border-success h-100">
+          <h6 class="text-success"><span class="badge bg-success me-1">Tier 3</span>No Support – 100% savings</h6>
+          <p class="small mb-1">Full cost avoidance. No support contract.</p>
+          <p class="small text-muted mb-0">Non-prod assets aged &gt;60 months.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 rounded border border-warning h-100">
+          <h6 class="text-warning"><span class="badge bg-warning text-dark me-1">Tier 4</span>3rd Party – 80% savings</h6>
+          <p class="small mb-1">7x24 third-party support. 80% cost reduction.</p>
+          <p class="small text-muted mb-0">Non-prod 36–60 mo, or prod &gt;84 months.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Per-Asset Analysis Table -->
+<div class="card shadow-sm">
+  <div class="card-header bg-light fw-semibold">Per-Asset Tier Recommendations
+    <span class="badge bg-secondary ms-2">{{ records | length }}</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-sm table-striped table-hover mb-0" id="analysisTable">
+        <thead class="table-dark">
+          <tr>
+            <th>Asset Name</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Age (mo)</th>
+            <th>Warranty</th>
+            <th>OEM Cost/yr</th>
+            <th>Rec. Tier</th>
+            <th>Tier Label</th>
+            <th>Cost Avoidance</th>
+            <th>Owner</th>
+            <th>Application</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in records %}
+          <tr>
+            <td class="fw-semibold">{{ r.asset_name or '–' }}</td>
+            <td>{{ r.type or '–' }}</td>
+            <td>
+              <span class="badge {{ 'bg-success' if r.status and 'prod' == r.status|lower else 'bg-secondary' }}">
+                {{ r.status or '–' }}
+              </span>
+            </td>
+            <td>{{ r.age_mo | int if r.age_mo else '–' }}</td>
+            <td>
+              <span class="badge
+                {{ 'bg-success' if r.warranty_status == 'Active' else
+                   'bg-danger' if r.warranty_status == 'Expired' else
+                   'bg-warning text-dark' if r.warranty_status == 'Expiring Soon' else
+                   'bg-secondary' }}">
+                {{ r.warranty_status or '–' }}
+              </span>
+            </td>
+            <td class="text-end">${{ "{:,.0f}".format(r.oem_cost) if r.oem_cost else '–' }}</td>
+            <td class="text-center">
+              <span class="badge {{ tier_badge(r.recommended_tier) }}">Tier {{ r.recommended_tier or '–' }}</span>
+            </td>
+            <td><small>{{ r.tier_label or '–' }}</small></td>
+            <td class="text-end text-success fw-semibold">
+              {% if r.cost_avoidance and r.cost_avoidance > 0 %}
+                ${{ "{:,.0f}".format(r.cost_avoidance) }}
+              {% else %}–{% endif %}
+            </td>
+            <td>{{ r.owner or '–' }}</td>
+            <td>{{ r.application or '–' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const tierAvoidance = {{ tier_avoidance_json | safe }};
+  buildBarChart('tierAvoidanceChart', tierAvoidance, '#2dc653', 'Cost Avoidance ($)');
+
+  // Quick table search
+  document.addEventListener('DOMContentLoaded', () => {
+    const table = document.getElementById('analysisTable');
+    if (!table) return;
+    const input = document.createElement('input');
+    input.type = 'search';
+    input.className = 'form-control form-control-sm mb-2';
+    input.placeholder = 'Quick search table…';
+    table.parentElement.insertBefore(input, table);
+    input.addEventListener('input', () => {
+      const q = input.value.toLowerCase();
+      table.querySelectorAll('tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+  });
+</script>
+{% endblock %}

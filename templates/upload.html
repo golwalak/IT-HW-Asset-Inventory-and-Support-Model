@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Upload CSV{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-light fw-semibold">
+        <i class="bi bi-upload me-2"></i>Upload Inventory CSV
+      </div>
+      <div class="card-body">
+        <p class="text-muted small">
+          Upload a CSV file that follows the inventory format (same columns as the sample data).
+          The uploaded data will replace the current dataset for this session.
+        </p>
+        <form method="post" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label for="csv_file" class="form-label">Select CSV file</label>
+            <input class="form-control" type="file" id="csv_file" name="csv_file" accept=".csv" required />
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-upload me-1"></i>Upload &amp; Load
+            </button>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Expected columns reference -->
+    <div class="card shadow-sm mt-3">
+      <div class="card-header bg-light fw-semibold">Expected Column Reference</div>
+      <div class="card-body p-0">
+        <table class="table table-sm table-striped mb-0">
+          <thead><tr><th>Column</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>Asset Name</td><td>Unique asset identifier</td></tr>
+            <tr><td>Type</td><td>Server/HCI, Network, Storage, etc.</td></tr>
+            <tr><td>Manufacturer</td><td>Nutanix, Cisco, IBM, NetApp, etc.</td></tr>
+            <tr><td>Model</td><td>Used for OEM cost lookup if cost column is empty</td></tr>
+            <tr><td>Location</td><td>Alhambra Data Center, Irvine Operations Center, etc.</td></tr>
+            <tr><td>Warranty End Date</td><td>YYYY-MM-DD – used for warranty status</td></tr>
+            <tr><td>age (mo)</td><td>Asset age in months</td></tr>
+            <tr><td>status (prod or nonprod) (mock)</td><td>"prod" or "nonprod"</td></tr>
+            <tr><td>7x24 OEM $ / 365 days (mock)</td><td>Annual OEM support cost (optional – estimated if blank)</td></tr>
+            <tr><td>Owner (mock)</td><td>Asset owner name</td></tr>
+            <tr><td>application (mock)</td><td>Associated application</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
