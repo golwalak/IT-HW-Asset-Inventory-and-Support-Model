@@ -28,12 +28,16 @@ app.secret_key = os.environ.get("SECRET_KEY", "vibeathon-poc-secret")
 
 def tier_badge(tier) -> str:
     """Return a Bootstrap badge class string for a given tier number."""
+    try:
+        tier_int = int(tier)
+    except (TypeError, ValueError):
+        return "bg-secondary"
     return {
         1: "bg-primary",
         2: "bg-info text-dark",
         3: "bg-success",
         4: "bg-warning text-dark",
-    }.get(int(tier) if tier is not None else 0, "bg-secondary")
+    }.get(tier_int, "bg-secondary")
 
 
 app.jinja_env.globals["tier_badge"] = tier_badge
@@ -182,7 +186,7 @@ def upload():
 
         try:
             content = file.read().decode("utf-8")
-            df = load_inventory.__wrapped__(io.StringIO(content)) if hasattr(load_inventory, "__wrapped__") else _load_from_stream(content)
+            df = _load_from_stream(content)
             _current_df = apply_support_model(df)
             flash(f"Successfully loaded {len(_current_df)} assets.", "success")
             return redirect(url_for("index"))
@@ -271,4 +275,5 @@ def reset():
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    debug_mode = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
+    app.run(debug=debug_mode)

@@ -130,7 +130,7 @@ def _normalise_columns(df: pd.DataFrame) -> pd.DataFrame:
         "7x24 OEM $ / 365 days (mock)": "oem_cost",
         "7x24 Tier1 (yes/no?)": "tier1_eligible",
         "NBD Tier 2 7% save (yes/no)": "tier2_eligible",
-        "None Tier 3 100% save (yes/on)": "tier3_eligible",
+        "None Tier 3 100% save (yes/no)": "tier3_eligible",
         "7x24 3rd Party Tier 4 80% save (yes/no)": "tier4_eligible",
         "cost avoidance ($) if not Tier 1": "cost_avoidance_raw",
     }
@@ -150,7 +150,7 @@ def apply_filters(df: pd.DataFrame, filters: dict) -> pd.DataFrame:
     """Apply user-supplied filters to the DataFrame."""
     for col, value in filters.items():
         if value and col in df.columns:
-            df = df[df[col].str.lower() == value.lower()]
+            df = df[df[col].fillna("").astype(str).str.lower() == value.lower()]
     return df
 
 
