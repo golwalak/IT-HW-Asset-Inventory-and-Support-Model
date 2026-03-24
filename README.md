@@ -1,98 +1,63 @@
 # IT Hardware Asset Inventory and Support Model
 
-A **VibeAThon POC** for visualizing and analyzing IT hardware asset data with support/maintenance cost modeling.
+A full-stack web application for managing IT hardware assets. Track laptops, desktops, monitors, servers, and other equipment across your organization.
+
+![IT Hardware Asset Inventory](https://github.com/user-attachments/assets/0297caf4-b6c6-4165-b76b-b7bce86af248)
+
+## Quick Start
+
+> **Both servers must be running.** Open two terminal windows and run:
+
+**Terminal 1 — Backend:**
+```bash
+cd backend
+npm install
+npm start
+```
+
+**Terminal 2 — Frontend:**
+```bash
+cd frontend
+npm install
+npm start
+```
+
+Then open **http://localhost:3000** in your browser.
+
+## Features
+
+- **Dashboard** — Summary statistics showing asset counts by type and status
+- **Asset List** — Filterable table of all hardware assets
+- **CRUD Operations** — Add, edit, and delete assets
+- **Filtering** — Filter assets by type, status, owner, and application
 
 ## Tech Stack
 
-- **Backend**: Node.js + Express (REST API, CSV ingestion, in-memory store)
-- **Frontend**: React (React Router, Axios)
-
----
-
-## Folder Structure
-
-```
-IT-HW-Asset-Inventory-and-Support-Model/
-├── backend/
-│   ├── server.js              # Express entry point (port 3001)
-│   ├── routes/                # assets.js, reports.js
-│   ├── controllers/           # assetsController.js, reportsController.js
-│   ├── models/Asset.js        # Asset data model
-│   ├── middleware/            # errorHandler.js
-│   ├── utils/csvParser.js     # CSV parsing utility
-│   └── data/                  # Uploaded CSV files (gitignored)
-├── frontend/
-│   └── src/
-│       ├── App.js             # Router + Nav
-│       ├── pages/             # Dashboard, InventoryPage, ReportsPage
-│       ├── components/        # AssetTable, AssetFilter, SupportTierBadge, etc.
-│       ├── services/api.js    # Axios API helpers
-│       ├── hooks/useAssets.js # Custom React hook
-│       └── utils/formatters.js
-├── docs/
-│   ├── requirements.md
-│   └── data-dictionary.md
-└── package.json               # Root monorepo scripts
-```
-
----
-
-## Setup & Running
-
-### 1. Install all dependencies
-
-```bash
-npm run install:all
-```
-
-### 2. Start development servers
-
-```bash
-npm run dev
-```
-
-This starts:
-- Backend on **http://localhost:3001**
-- Frontend on **http://localhost:3000**
-
-### 3. Upload a CSV
-
-Navigate to the **Dashboard** and use the **Upload Inventory CSV** widget to load your inventory export. The backend will parse the file and hold the data in memory for the session.
-
----
+- **Backend:** Node.js / Express — REST API with in-memory data store (runs on port 3001)
+- **Frontend:** React — Responsive UI (runs on port 3000)
 
 ## API Endpoints
 
-| Method | Path                          | Description                        |
-|--------|-------------------------------|------------------------------------|
-| GET    | /api/health                   | Health check                       |
-| GET    | /api/assets                   | All assets (filter: owner, application, status) |
-| GET    | /api/assets/:id               | Single asset by Asset Number       |
-| POST   | /api/assets/upload            | Upload CSV file                    |
-| GET    | /api/reports/by-owner         | Assets grouped by Owner            |
-| GET    | /api/reports/by-application   | Assets grouped by Application      |
-| GET    | /api/reports/by-tier          | Assets grouped by support tier     |
-| GET    | /api/reports/cost-avoidance   | Cost avoidance summary             |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/assets` | List all assets (supports query filters) |
+| GET | `/api/assets/:id` | Get a single asset |
+| POST | `/api/assets` | Create a new asset |
+| PUT | `/api/assets/:id` | Update an asset |
+| DELETE | `/api/assets/:id` | Delete an asset |
+| GET | `/api/assets/summary/stats` | Get summary statistics |
 
----
+## Data Model
 
-## Support Tier Model
+Each asset has the following fields:
 
-| Tier   | Description            | Savings vs OEM Tier 1 |
-|--------|------------------------|-----------------------|
-| Tier 1 | 7x24 OEM               | Baseline (0%)         |
-| Tier 2 | NBD OEM                | 7% savings            |
-| Tier 3 | No support             | 100% savings          |
-| Tier 4 | 7x24 3rd Party         | 80% savings           |
-
-**Cost avoidance** = OEM cost × savings % (only when not on Tier 1).  
-OEM $ / cost fields are **manually populated** in the CSV.  
-`Owner` and `Application` are the **authoritative** fields for grouping and reporting.
-
----
-
-## Documentation
-
-- [`docs/requirements.md`](docs/requirements.md) — Project requirements and open questions
-- [`docs/data-dictionary.md`](docs/data-dictionary.md) — CSV field descriptions and data types
-
+- **assetTag** — Unique identifier (e.g., "HW-001")
+- **name** — Device name (e.g., "Dell Latitude 5520")
+- **type** — Laptop, Desktop, Monitor, Server, Network Equipment, Printer, Other
+- **owner** — Person responsible for the asset
+- **application** — Business application or team it supports
+- **status** — Active, In Storage, Under Repair, Retired, Disposed
+- **purchaseDate** — Date of purchase
+- **warrantyExpiry** — Warranty expiration date
+- **location** — Physical location
+- **notes** — Additional notes
