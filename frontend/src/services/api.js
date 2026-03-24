@@ -33,6 +33,6 @@ export const deleteAsset = async (id) => {
 };
 
 export const getStats = async () => {
-  const response = await api.get('/stats');
+  const response = await api.get('/summary/stats');
   return response.data;
 };
