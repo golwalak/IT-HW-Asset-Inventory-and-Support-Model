@@ -2,6 +2,28 @@
 
 A full-stack web application for managing IT hardware assets. Track laptops, desktops, monitors, servers, and other equipment across your organization.
 
+![IT Hardware Asset Inventory](https://github.com/user-attachments/assets/0297caf4-b6c6-4165-b76b-b7bce86af248)
+
+## Quick Start
+
+> **Both servers must be running.** Open two terminal windows and run:
+
+**Terminal 1 — Backend:**
+```bash
+cd backend
+npm install
+npm start
+```
+
+**Terminal 2 — Frontend:**
+```bash
+cd frontend
+npm install
+npm start
+```
+
+Then open **http://localhost:3000** in your browser.
+
 ## Features
 
 - **Dashboard** — Summary statistics showing asset counts by type and status
@@ -11,37 +33,8 @@ A full-stack web application for managing IT hardware assets. Track laptops, des
 
 ## Tech Stack
 
-- **Backend:** Node.js / Express (port 3001) — REST API with in-memory data store
-- **Frontend:** React (port 3000) — Responsive UI
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js (v16 or later)
-- npm
-
-### Installation & Running
-
-1. **Start the backend:**
-
-   ```bash
-   cd backend
-   npm install
-   npm start
-   ```
-
-   The API server will start on http://localhost:3001
-
-2. **Start the frontend** (in a separate terminal):
-
-   ```bash
-   cd frontend
-   npm install
-   npm start
-   ```
-
-   The React app will open at http://localhost:3000
+- **Backend:** Node.js / Express — REST API with in-memory data store (runs on port 3001)
+- **Frontend:** React — Responsive UI (runs on port 3000)
 
 ## API Endpoints
 
