@@ -1,0 +1,58 @@
+/* VibeAThon POC – IT Hardware Asset Inventory & Support Model */
+
+/* ── Global ─────────────────────────────────────────────────────── */
+body {
+  font-size: 0.9rem;
+  background-color: #f8f9fa;
+}
+
+/* ── KPI Cards ──────────────────────────────────────────────────── */
+.kpi-card .card-body {
+  padding: 1.5rem 1rem;
+}
+
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.kpi-label {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Navbar brand ───────────────────────────────────────────────── */
+.navbar-brand {
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+}
+
+/* ── Footer ─────────────────────────────────────────────────────── */
+.footer {
+  font-size: 0.78rem;
+  background-color: #f8f9fa;
+}
+
+/* ── Tables ─────────────────────────────────────────────────────── */
+.table th {
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+/* ── Card headers ───────────────────────────────────────────────── */
+.card-header {
+  font-size: 0.85rem;
+}
+
+/* ── Chart canvases ─────────────────────────────────────────────── */
+canvas {
+  width: 100% !important;
+}

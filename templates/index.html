@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="mb-0"><i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard</h2>
+  <a href="{{ url_for('export') }}" class="btn btn-outline-success btn-sm">
+    <i class="bi bi-download me-1"></i>Export CSV
+  </a>
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="card kpi-card border-primary shadow-sm h-100">
+      <div class="card-body text-center">
+        <div class="kpi-value text-primary">{{ total_assets }}</div>
+        <div class="kpi-label">Total Assets</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card kpi-card border-success shadow-sm h-100">
+      <div class="card-body text-center">
+        <div class="kpi-value text-success">${{ "{:,.0f}".format(totals.total_cost_avoidance) }}</div>
+        <div class="kpi-label">Potential Cost Avoidance</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card kpi-card border-warning shadow-sm h-100">
+      <div class="card-body text-center">
+        <div class="kpi-value text-warning">{{ totals.avoidance_pct }}%</div>
+        <div class="kpi-label">Savings vs OEM Baseline</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card kpi-card border-info shadow-sm h-100">
+      <div class="card-body text-center">
+        <div class="kpi-value text-info">{{ totals.non_tier1_count }}</div>
+        <div class="kpi-label">Assets Eligible for Tier 2–4</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div class="row g-3 mb-4">
+  <div class="col-lg-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-light fw-semibold">Assets by Type</div>
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <canvas id="typeChart" style="max-height:260px;"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-light fw-semibold">Assets by Location</div>
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <canvas id="locationChart" style="max-height:260px;"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-light fw-semibold">Warranty Status</div>
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <canvas id="warrantyChart" style="max-height:260px;"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-light fw-semibold">Age Distribution</div>
+      <div class="card-body">
+        <canvas id="ageChart" style="max-height:260px;"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-light fw-semibold">Recommended Support Tier Distribution</div>
+      <div class="card-body">
+        <canvas id="tierChart" style="max-height:260px;"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Summary Tables Row -->
+<div class="row g-3">
+  <!-- By Support Group -->
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-light fw-semibold">Assets by Support Group</div>
+      <div class="card-body p-0">
+        <table class="table table-sm table-striped mb-0">
+          <thead><tr><th>Support Group</th><th class="text-end">Count</th></tr></thead>
+          <tbody>
+            {% for group, count in by_support_group.items() %}
+            <tr><td>{{ group }}</td><td class="text-end">{{ count }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- Tier Summary -->
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-light fw-semibold">Support Tier Summary</div>
+      <div class="card-body p-0">
+        <table class="table table-sm table-striped mb-0">
+          <thead><tr><th>Tier</th><th class="text-end">Assets</th><th class="text-end">OEM Cost</th><th class="text-end">Cost Avoidance</th></tr></thead>
+          <tbody>
+            {% for t in tier_summary %}
+            <tr>
+              <td><span class="badge {{ tier_badge(t.tier) }}">Tier {{ t.tier }}</span> {{ t.label.split('–')[1] if '–' in t.label else t.label }}</td>
+              <td class="text-end">{{ t.count }}</td>
+              <td class="text-end">${{ "{:,.0f}".format(t.total_oem_cost) }}</td>
+              <td class="text-end text-success fw-semibold">${{ "{:,.0f}".format(t.total_cost_avoidance) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const byType     = {{ by_type_json | safe }};
+  const byLocation = {{ by_location_json | safe }};
+  const warranty   = {{ warranty_json | safe }};
+  const ageBuckets = {{ age_buckets_json | safe }};
+  const tierCounts = {{ tier_counts_json | safe }};
+
+  buildDoughnutChart('typeChart',     byType,     ['#4361ee','#3f37c9','#4895ef','#4cc9f0','#7209b7']);
+  buildDoughnutChart('locationChart', byLocation, ['#4361ee','#f72585']);
+  buildDoughnutChart('warrantyChart', warranty,   ['#2dc653','#e63946','#f4a261']);
+  buildBarChart('ageChart', ageBuckets, '#4361ee', 'Asset Count');
+  buildBarChart('tierChart', tierCounts, '#7209b7', 'Asset Count');
+</script>
+{% endblock %}
