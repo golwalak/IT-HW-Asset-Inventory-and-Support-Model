@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# Build artifacts
+dist/
+build/
+
+# Uploaded CSV files (keep the folder but not the data)
+backend/data/*.csv
+
+# OS files
+.DS_Store
+Thumbs.db
