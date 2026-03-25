@@ -40,8 +40,9 @@ Thumbs.db
 
 # Database / Runtime
 *.db
+*.db-shm
+*.db-wal
 *.sqlite
 uploads/
 backend/uploads/
-backend/data/*.csv
 *.log

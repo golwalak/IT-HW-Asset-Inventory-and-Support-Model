@@ -8,7 +8,14 @@ const STATUS_COLORS = {
   Disposed: '#dc3545',
 };
 
-export default function AssetList({ assets, onEdit, onDelete, onAdd }) {
+const TIER_COLORS = {
+  Tier1: '#dc3545',
+  Tier2: '#fd7e14',
+  Tier3: '#28a745',
+  Tier4: '#0d6efd',
+};
+
+export default function AssetList({ assets, onEdit, onDelete, onAdd, onTier, onReassign }) {
   const [filterType, setFilterType] = React.useState('');
   const [filterStatus, setFilterStatus] = React.useState('');
   const [filterOwner, setFilterOwner] = React.useState('');
@@ -75,7 +82,9 @@ export default function AssetList({ assets, onEdit, onDelete, onAdd }) {
               <th>Name</th>
               <th>Type</th>
               <th>Owner</th>
+              <th>Manager</th>
               <th>Application</th>
+              <th>Support Tier</th>
               <th>Status</th>
               <th>Location</th>
               <th>Actions</th>
@@ -84,7 +93,7 @@ export default function AssetList({ assets, onEdit, onDelete, onAdd }) {
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan="8" className="empty-row">No assets found.</td>
+                <td colSpan="10" className="empty-row">No assets found.</td>
               </tr>
             ) : (
               filtered.map((asset) => (
@@ -93,7 +102,18 @@ export default function AssetList({ assets, onEdit, onDelete, onAdd }) {
                   <td>{asset.name}</td>
                   <td>{asset.type}</td>
                   <td>{asset.owner}</td>
+                  <td>{asset.manager}</td>
                   <td>{asset.application}</td>
+                  <td>
+                    <span
+                      className="status-badge"
+                      style={{
+                        backgroundColor: TIER_COLORS[asset.supportTier] || '#999',
+                      }}
+                    >
+                      {asset.supportTier || 'Tier1'}
+                    </span>
+                  </td>
                   <td>
                     <span
                       className="status-badge"
@@ -114,6 +134,20 @@ export default function AssetList({ assets, onEdit, onDelete, onAdd }) {
                       onClick={() => onDelete(asset)}
                     >
                       Delete
+                    </button>
+                    <button
+                      className="btn btn-sm"
+                      style={{ marginLeft: '4px', background: '#0d6efd', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer' }}
+                      onClick={() => onTier(asset)}
+                    >
+                      Tier
+                    </button>
+                    <button
+                      className="btn btn-sm"
+                      style={{ marginLeft: '4px', background: '#6c757d', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer' }}
+                      onClick={() => onReassign(asset)}
+                    >
+                      Reassign
                     </button>
                   </td>
                 </tr>
